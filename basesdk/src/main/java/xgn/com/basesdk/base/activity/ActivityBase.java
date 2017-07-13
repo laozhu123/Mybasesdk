@@ -10,9 +10,9 @@ import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
@@ -24,6 +24,10 @@ import android.widget.Toast;
 
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
+import com.xgn.common.swipe_pull_load.UtilFooterHeaderView;
+import com.xgn.common.swipe_pull_load.swipetoloadlayout.OnLoadMoreListener;
+import com.xgn.common.swipe_pull_load.swipetoloadlayout.OnRefreshListener;
+import com.xgn.common.swipe_pull_load.swipetoloadlayout.SwipeToLoadLayout;
 
 import me.yokeyword.fragmentation.SupportActivity;
 import xgn.com.basesdk.R;
@@ -49,8 +53,9 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
     protected DialogLoadingHelper mLoadingHelper;
     private View mTitleBarBack;
     protected PageLoadingHelper mPageLoadingHelper;
-    private SwipeRefreshLayout mSwipeRefresh;
+    private SwipeToLoadLayout mSwipeRefresh;
     private TextView mTitleBarRightText;
+    private LayoutInflater mInflater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +65,7 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
         setContentView(getBaseContentLayoutResId());
         mLoadingHelper = new DialogLoadingHelper(this);
         initBaseView();
-        mPageLoadingHelper = new PageLoadingHelper(mContentContainer,this,mContentView);
+        mPageLoadingHelper = new PageLoadingHelper(mContentContainer, this, mContentView);
         initBaseToolBar();
         initPresenter();
         initActivity(mContentView);
@@ -79,6 +84,20 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
         }
     }
 
+    public void setLoadMoreComplete() {
+        if (useSwipeRefreshLayout()) {
+            mSwipeRefresh.setLoadingMore(false);
+        }
+    }
+
+    public void setLoadingMoreEnabled(boolean enable){
+        mSwipeRefresh.setLoadMoreEnabled(enable);
+    }
+
+    public void setRefreshEnabled(boolean enable){
+        mSwipeRefresh.setRefreshEnabled(enable);
+    }
+
     /**
      * 初始化保存状态
      *
@@ -88,14 +107,25 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
     }
 
     private void initBaseView() {
-        mContentContainer = (FrameLayout)super.findViewById(R.id.content_container);
-        mContentView = getLayoutInflater().inflate(getContentLayoutResId(), mContentContainer,false);
+        mContentContainer = (FrameLayout) super.findViewById(R.id.swipe_target);
+        mContentView = getLayoutInflater().inflate(getContentLayoutResId(), mContentContainer, false);
         if (useSwipeRefreshLayout()) {
-            mSwipeRefresh = (SwipeRefreshLayout) super.findViewById(R.id.refresh);
-            mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            mSwipeRefresh = (SwipeToLoadLayout) super.findViewById(R.id.refresh);
+            mInflater = getLayoutInflater();
+            mSwipeRefresh.setRefreshHeaderView(UtilFooterHeaderView.getGoogleHookHeader(mInflater, mSwipeRefresh));
+            mSwipeRefresh.setLoadMoreFooterView(UtilFooterHeaderView.getGoogleHookFooter(mInflater, mSwipeRefresh));
+            mSwipeRefresh.setSwipeStyle(SwipeToLoadLayout.STYLE.ABOVE);
+
+            mSwipeRefresh.setOnRefreshListener(new OnRefreshListener() {
                 @Override
                 public void onRefresh() {
                     reLoadData();
+                }
+            });
+            mSwipeRefresh.setOnLoadMoreListener(new OnLoadMoreListener() {
+                @Override
+                public void onLoadMore() {
+                    loadMoreData();
                 }
             });
         }
@@ -108,7 +138,15 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
     }
 
     /**
+     * 重写此方法  上拉加载
+     */
+    public void loadMoreData() {
+
+    }
+
+    /**
      * 如果之类想使用下来刷新功能，需要重写 返回true
+     *
      * @return
      */
     public boolean useSwipeRefreshLayout() {
@@ -138,7 +176,10 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
     protected void setComponent() {
     }
 
-    protected void initPresenter(){};
+    protected void initPresenter() {
+    }
+
+    ;
 
     protected abstract void initActivity(View pView);
 
@@ -353,7 +394,7 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
         setRefreshComplete();
     }
 
-    protected SwipeRefreshLayout getRefreshLayout(){
+    protected SwipeToLoadLayout getRefreshLayout() {
         return mSwipeRefresh;
     }
 
@@ -374,10 +415,11 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
 
     /**
      * 设置是否显示toolbar的返回按钮
+     *
      * @param visiable
      */
     public void setBackIconVisiable(boolean visiable) {
-        mTitleBarBack.setVisibility(visiable ? View.VISIBLE :View.INVISIBLE);
+        mTitleBarBack.setVisibility(visiable ? View.VISIBLE : View.INVISIBLE);
     }
 
     /**
@@ -485,7 +527,7 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
     @Override
     public void showErrorView(@Nullable String pErrorMes, @DrawableRes int pErrorIconRes) {
         setRefreshComplete();
-        mPageLoadingHelper.showErrorView(pErrorMes,pErrorIconRes);
+        mPageLoadingHelper.showErrorView(pErrorMes, pErrorIconRes);
     }
 
     @Override
@@ -502,7 +544,7 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
     @Override
     public void showEmptyView(@DrawableRes int pEmptyIconRes, @Nullable String pEpmtyMes) {
         setRefreshComplete();
-        mPageLoadingHelper.showEmptyView(pEmptyIconRes,pEpmtyMes);
+        mPageLoadingHelper.showEmptyView(pEmptyIconRes, pEpmtyMes);
     }
 
     @Override
