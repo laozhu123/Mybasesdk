@@ -3,6 +3,7 @@ package xgn.com.basesdk.base.app;
 import android.app.Application;
 
 import xgn.com.basesdk.base.component.CoreAppComponent;
+import xgn.com.basesdk.base.component.DaggerCoreAppComponent;
 
 /**
  * Created by huluzi on 2017/7/13.
