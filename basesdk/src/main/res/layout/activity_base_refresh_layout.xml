@@ -13,8 +13,8 @@
         app:contentInsetLeft="0dp"
         app:contentInsetStart="0dp" />
 
-    <com.xgn.common.swipe_pull_load.swipetoloadlayout.SwipeToLoadLayout
-        android:id="@+id/refresh"
+    <com.xgn.common.swipe_pull_load.FixedSwipeToLoadLayout
+        android:id="@+id/swipe_to_load_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <!--android:id="@+id/content_container"-->
@@ -22,7 +22,8 @@
             android:id="@+id/swipe_target"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.xgn.common.swipe_pull_load.swipetoloadlayout.SwipeToLoadLayout>
+
+    </com.xgn.common.swipe_pull_load.FixedSwipeToLoadLayout>
 
 
 </LinearLayout>
