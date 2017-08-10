@@ -10,6 +10,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/basesdk" />
+            <option value="$PROJECT_DIR$/swipepullload" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

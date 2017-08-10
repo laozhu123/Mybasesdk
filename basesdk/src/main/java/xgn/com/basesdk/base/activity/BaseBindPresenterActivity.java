@@ -9,7 +9,6 @@ import xgn.com.basesdk.base.mvp.BasePresenter;
 public abstract class BaseBindPresenterActivity<P extends BasePresenter> extends ActivityBase {
     public P mPresenter;
 
-
     @Override
     protected void initPresenter() {
         super.initPresenter();
@@ -28,5 +27,4 @@ public abstract class BaseBindPresenterActivity<P extends BasePresenter> extends
     }
 
     public abstract P getPresenter();
-
 }

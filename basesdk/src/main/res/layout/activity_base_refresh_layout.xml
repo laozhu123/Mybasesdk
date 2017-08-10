@@ -13,16 +13,17 @@
         app:contentInsetLeft="0dp"
         app:contentInsetStart="0dp" />
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/refresh"
+    <com.xgn.common.swipe_pull_load.FixedSwipeToLoadLayout
+        android:id="@+id/swipe_to_load_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
-
+        android:layout_height="wrap_content">
+        <!--android:id="@+id/content_container"-->
         <FrameLayout
-            android:id="@+id/content_container"
+            android:id="@+id/swipe_target"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </android.support.v4.widget.SwipeRefreshLayout>
+
+    </com.xgn.common.swipe_pull_load.FixedSwipeToLoadLayout>
+
 
 </LinearLayout>

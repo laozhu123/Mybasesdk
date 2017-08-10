@@ -3,6 +3,7 @@ package xgn.com.basesdk.base;
 import android.app.Activity;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -176,6 +177,18 @@ public class PageLoadingHelper {
         ((ImageView) mContainerLayout.findViewById(R.id.iv_common_empty)).setImageResource(pEmptyIconRes);
         if (!TextUtils.isEmpty(pEpmtyMes)) {
             ((TextView) mContainerLayout.findViewById(R.id.tv_common_empty_tip)).setText(pEpmtyMes);
+        }
+    }
+
+    public void showEmptyView(@DrawableRes int pEmptyIconRes, @StringRes int pEpmtyMes) {
+        if(this.mContainerLayout.getChildCount() > 0) {
+            this.mContainerLayout.removeAllViews();
+        }
+
+        this.mLayoutInflater.inflate(R.layout.empty_finished_list, this.mContainerLayout);
+        ((ImageView)this.mContainerLayout.findViewById(R.id.iv_common_empty)).setImageResource(pEmptyIconRes);
+        if(!TextUtils.isEmpty(this.mActivity.getString(pEpmtyMes))) {
+            ((TextView)this.mContainerLayout.findViewById(R.id.tv_common_empty_tip)).setText(pEpmtyMes);
         }
     }
 

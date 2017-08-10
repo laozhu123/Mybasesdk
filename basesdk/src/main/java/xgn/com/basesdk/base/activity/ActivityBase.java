@@ -3,29 +3,32 @@ package xgn.com.basesdk.base.activity;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.annotation.StringRes;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
+import com.xgn.common.swipe_pull_load.FixedSwipeToLoadLayout;
+import com.xgn.common.swipe_pull_load.UtilFooterHeaderView;
+import com.xgn.common.swipe_pull_load.swipetoloadlayout.OnLoadMoreListener;
+import com.xgn.common.swipe_pull_load.swipetoloadlayout.OnRefreshListener;
+import com.xgn.common.swipe_pull_load.swipetoloadlayout.SwipeToLoadLayout;
 
-import me.yokeyword.fragmentation.SupportActivity;
 import xgn.com.basesdk.R;
 import xgn.com.basesdk.base.ActivityCollector;
 import xgn.com.basesdk.base.DialogLoadingHelper;
@@ -34,14 +37,15 @@ import xgn.com.basesdk.base.mvp.MvpView;
 import xgn.com.basesdk.network.ExceptionHandle;
 import xgn.com.basesdk.utils.UiUtil;
 
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
 
 /**
  * 全局Activity基类
  * Created by yefeng on 2017/04/07.
  * Modified by  yefeng
  */
-public abstract class ActivityBase extends SupportActivity implements MvpView {
-
+public abstract class ActivityBase extends AppCompatActivity implements MvpView, OnRefreshListener, OnLoadMoreListener {
     private Toolbar mToolbar;
     private FrameLayout mContentContainer;
     private TextView mTitleBarTitle;
@@ -49,218 +53,181 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
     protected DialogLoadingHelper mLoadingHelper;
     private View mTitleBarBack;
     protected PageLoadingHelper mPageLoadingHelper;
-    private SwipeRefreshLayout mSwipeRefresh;
     private TextView mTitleBarRightText;
+    private FixedSwipeToLoadLayout fixedSwipeToLoadLayout;
 
-    @Override
+    public ActivityBase() {
+    }
+
     protected void onCreate(Bundle savedInstanceState) {
-        setComponent();
+        this.setComponent();
         super.onCreate(savedInstanceState);
         ActivityCollector.addActivity(this);
-        setContentView(getBaseContentLayoutResId());
-        mLoadingHelper = new DialogLoadingHelper(this);
-        initBaseView();
-        mPageLoadingHelper = new PageLoadingHelper(mContentContainer,this,mContentView);
-        initBaseToolBar();
-        initPresenter();
-        initActivity(mContentView);
-        initInstanceState(savedInstanceState);
-        showContent();
+        this.setContentView(this.getBaseContentLayoutResId());
+        this.mLoadingHelper = new DialogLoadingHelper(this);
+        this.initBaseView();
+        this.mPageLoadingHelper = new PageLoadingHelper(this.mContentContainer, this, this.mContentView);
+        this.initBaseToolBar();
+        this.initPresenter();
+        this.showContent();
+        this.initActivity(this.mContentView);
+        this.initInstanceState(savedInstanceState);
     }
 
     protected int getBaseContentLayoutResId() {
-        return useSwipeRefreshLayout() ?
-                R.layout.activity_base_refresh_layout : R.layout.activity_base_layout;
+        return this.useSwipeRefreshLayout() ? R.layout.activity_base_refresh_layout : R.layout.activity_base_layout;
     }
 
     protected void setRefreshComplete() {
-        if (useSwipeRefreshLayout()) {
-            mSwipeRefresh.setRefreshing(false);
+        if (this.useSwipeRefreshLayout()) {
+            this.fixedSwipeToLoadLayout.setRefreshing(false);
         }
+
     }
 
-    /**
-     * 初始化保存状态
-     *
-     * @param savedInstanceState
-     */
     protected void initInstanceState(Bundle savedInstanceState) {
     }
 
     private void initBaseView() {
-        mContentContainer = (FrameLayout)super.findViewById(R.id.content_container);
-        mContentView = getLayoutInflater().inflate(getContentLayoutResId(), mContentContainer,false);
-        if (useSwipeRefreshLayout()) {
-            mSwipeRefresh = (SwipeRefreshLayout) super.findViewById(R.id.refresh);
-            mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    reLoadData();
-                }
-            });
+        if (this.useSwipeRefreshLayout()) {
+            this.mContentContainer = (FrameLayout) super.findViewById(R.id.swipe_target);
+            this.mContentView = this.getLayoutInflater().inflate(this.getContentLayoutResId(), this.mContentContainer, false);
+            fixedSwipeToLoadLayout = (FixedSwipeToLoadLayout) super.findViewById(R.id.swipe_to_load_layout);
+            Log.e("helo", "mContentContainer" + (mContentContainer == null ? "null" : "you"));
+            Log.e("helo", "mContentView" + (mContentView == null ? "null" : "you"));
+            fixedSwipeToLoadLayout.setTargetView(mContentContainer);
+            fixedSwipeToLoadLayout.setSwipeStyle(SwipeToLoadLayout.STYLE.ABOVE);
+            fixedSwipeToLoadLayout.setOnLoadMoreListener(this);
+            fixedSwipeToLoadLayout.setOnRefreshListener(this);
+            fixedSwipeToLoadLayout.setRefreshHeaderView(
+                    UtilFooterHeaderView.getGoogleHookHeader(getLayoutInflater(), fixedSwipeToLoadLayout));
+            fixedSwipeToLoadLayout.setLoadMoreFooterView(
+                    UtilFooterHeaderView.getGoogleHookFooter(getLayoutInflater(), fixedSwipeToLoadLayout));
+        } else {
+            this.mContentContainer = (FrameLayout) super.findViewById(R.id.content_container);
+            this.mContentView = this.getLayoutInflater().inflate(this.getContentLayoutResId(), this.mContentContainer, false);
         }
+
     }
 
-    /**
-     * 重写此方法  下拉刷新
-     */
     public void reLoadData() {
+
     }
 
-    /**
-     * 如果之类想使用下来刷新功能，需要重写 返回true
-     * @return
-     */
+    @Override
+    public void onRefresh() {
+    }
+
+    @Override
+    public void onLoadMore() {
+    }
+
     public boolean useSwipeRefreshLayout() {
         return false;
     }
 
-    @Override
     public View findViewById(@IdRes int id) {
-        return mContentView.findViewById(id);
+        return this.mContentView.findViewById(id);
     }
 
-
     private void initBaseToolBar() {
-        mToolbar = (Toolbar) super.findViewById(R.id.toolbar);
-        setNormalTitlebar();
+        this.mToolbar = (Toolbar) super.findViewById(R.id.toolbar);
+        this.setNormalTitlebar();
     }
 
     protected abstract int getContentLayoutResId();
 
     public Toolbar getToolbar() {
-        return mToolbar;
+        return this.mToolbar;
     }
 
-    /**
-     * 初始化注入器
-     */
     protected void setComponent() {
     }
 
-    protected void initPresenter(){};
-
-    protected abstract void initActivity(View pView);
-
-//    /**
-//     * 将子类布局就加载到带有toolbar的父类布局中
-//     */
-//    @Override
-//    public void setContentView(int layoutResID) {
-//        setContentView(View.inflate(this, layoutResID, null));
-//    }
-//
-//    @Override
-//    public void setContentView(View view) {
-//        mContentView = view;
-//        mContentContainer.addView(mContentView,
-//                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-//        setNormalTitlebar();
-//    }
-
-    /**
-     * 初始化标准的标题栏
-     */
-    public void setNormalTitlebar() {
-        View titleBar = getLayoutInflater().inflate(R.layout.view_simple_title_bar, null);
-        mTitleBarBack = titleBar.findViewById(R.id.titlebar_back);
-        mTitleBarTitle = (TextView) titleBar.findViewById(R.id.titlebar_title);
-        mTitleBarRightText = (TextView) titleBar.findViewById(R.id.titlebar_right_text);
-        mTitleBarBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        setCustomTitleBar(titleBar);
+    protected void initPresenter() {
     }
 
-    /**
-     * 添加自定义标题栏
-     */
-    public void setCustomTitleBar(View titlebarLayout) {
-        mToolbar.removeAllViews();  // 先清除掉之前可能加入的
+    protected abstract void initActivity(View var1);
 
-        Toolbar.LayoutParams lp = new Toolbar.LayoutParams(
-                Toolbar.LayoutParams.MATCH_PARENT,
-                Toolbar.LayoutParams.MATCH_PARENT);//传入的布局，覆盖整个Toolbar
-        mToolbar.addView(titlebarLayout, lp);
+    public void setNormalTitlebar() {
+        View titleBar = this.getLayoutInflater().inflate(R.layout.view_simple_title_bar, (ViewGroup) null);
+        this.mTitleBarBack = titleBar.findViewById(R.id.titlebar_back);
+        this.mTitleBarTitle = (TextView) titleBar.findViewById(R.id.titlebar_title);
+        this.mTitleBarRightText = (TextView) titleBar.findViewById(R.id.titlebar_right_text);
+        this.mTitleBarBack.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                ActivityBase.this.onBackPressed();
+            }
+        });
+        this.setCustomTitleBar(titleBar);
+    }
+
+    public void setCustomTitleBar(View titlebarLayout) {
+        this.mToolbar.removeAllViews();
+        Toolbar.LayoutParams lp = new Toolbar.LayoutParams(-1, -1);
+        this.mToolbar.addView(titlebarLayout, lp);
     }
 
     public void hideTitleBar() {
-        mToolbar.setVisibility(View.GONE);
+        this.mToolbar.setVisibility(View.GONE);
     }
 
-    @Override
     protected void onPause() {
         super.onPause();
     }
 
-    @Override
     protected void onResume() {
         super.onResume();
-        // 强制竖屏
-        if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if (this.getRequestedOrientation() != SCREEN_ORIENTATION_PORTRAIT) {
+            this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
         }
+
     }
 
-    /**
-     * 设置标题
-     */
     public void setTitle(CharSequence title) {
-        if (mTitleBarTitle != null) {
-            mTitleBarTitle.setText(title);
+        if (this.mTitleBarTitle != null) {
+            this.mTitleBarTitle.setText(title);
         }
+
     }
 
-    /**
-     * 设置标题
-     */
     public void setTitle(int TitleId) {
-        if (mTitleBarTitle != null) {
-            mTitleBarTitle.setText(TitleId);
+        if (this.mTitleBarTitle != null) {
+            this.mTitleBarTitle.setText(TitleId);
         }
+
     }
 
-    /**
-     * 设置右文本
-     */
     public void setRightTitle(CharSequence title) {
         if (!TextUtils.isEmpty(title)) {
-            mTitleBarRightText.setText(title);
+            this.mTitleBarRightText.setVisibility(View.VISIBLE);
+            this.mTitleBarRightText.setText(title);
         }
+
     }
 
-    /**
-     * 设置右文本点击事件
-     */
     public void setRightTitleClick(View.OnClickListener onClickListener) {
-        if (mTitleBarRightText != null) {
-            mTitleBarRightText.setOnClickListener(onClickListener);
+        if (this.mTitleBarRightText != null) {
+            this.mTitleBarRightText.setOnClickListener(onClickListener);
         }
+
     }
 
-    /**
-     * Toast 提示
-     */
-    @Override
+    public void setRightTitleEnable(boolean enable) {
+        if (this.mTitleBarRightText != null) {
+            this.mTitleBarRightText.setEnabled(enable);
+        }
+
+    }
+
     public void showToast(int resid) {
-        showToast(resid, Toast.LENGTH_SHORT);
+        this.showToast(resid, 0);
     }
 
-    /**
-     * Toast 提示
-     */
-    @Override
     public void showToast(int resid, int duration) {
         UiUtil.showToast(this, resid);
     }
 
-    /**
-     * Toast 提示
-     */
-    @Override
     public void showToast(CharSequence message) {
         if (!TextUtils.isEmpty(message)) {
             UiUtil.showToast(this, message.toString());
@@ -268,246 +235,182 @@ public abstract class ActivityBase extends SupportActivity implements MvpView {
 
     }
 
-    /**
-     * Toast 提示
-     */
-    @Override
     public void showToast(CharSequence message, int duration) {
         if (!TextUtils.isEmpty(message)) {
             UiUtil.showToast(this, message.toString());
         }
+
     }
 
-    @Override
     public void showMsg(int title, int des) {
         UiUtil.showToast(this, title, des);
     }
 
-    /**
-     * 显示等待框
-     * 默认显示"加载中..."
-     */
-    @Override
     public void showWaiting() {
-        mLoadingHelper.showWaiting(null, isFinishing());
+        this.mLoadingHelper.showWaiting((String) null, this.isFinishing());
     }
 
-    /**
-     * 默认显示"加载中..."
-     */
-    @Override
     public void showWaiting(boolean instantShow) {
-        mLoadingHelper.showWaiting(instantShow, isFinishing());
+        this.mLoadingHelper.showWaiting(instantShow, this.isFinishing());
     }
 
-    /**
-     * 显示等待框
-     * 默认显示"加载中..."
-     */
-    @Override
     public void showWaiting(int strId) {
-        String message = getString(strId);
-        mLoadingHelper.showWaiting(message, isFinishing());
+        String message = this.getString(strId);
+        this.mLoadingHelper.showWaiting(message, this.isFinishing());
     }
 
-    /**
-     * 显示等待框
-     */
-    @Override
     public void showWaiting(int strId, boolean isCancelable) {
-        String message = getString(strId);
-        mLoadingHelper.showWaiting(message, isCancelable, isFinishing());
+        String message = this.getString(strId);
+        this.mLoadingHelper.showWaiting(message, isCancelable, this.isFinishing());
     }
 
-    /**
-     * 显示等待框
-     * 默认显示"加载中..."
-     */
-    @Override
     public void showWaiting(String message) {
-        mLoadingHelper.showWaiting(message, isFinishing());
+        this.mLoadingHelper.showWaiting(message, this.isFinishing());
     }
 
-    /**
-     * 显示等待框
-     * 默认显示"加载中..."
-     */
-    @Override
     public void showWaiting(String message, boolean isCancelable) {
-        mLoadingHelper.showWaiting(message, isCancelable, isFinishing());
+        this.mLoadingHelper.showWaiting(message, isCancelable, this.isFinishing());
     }
 
-    /**
-     * 隐藏等待框
-     */
-    @Override
     public void stopWaiting() {
-        mLoadingHelper.stopWaiting();
+        this.mLoadingHelper.stopWaiting();
     }
 
-    /**
-     * 如果使用了下拉刷新，重新加载数据成功后需要调此方法
-     */
     public void showContent() {
-        mPageLoadingHelper.showContent();
-        setRefreshComplete();
+        this.mPageLoadingHelper.showContent();
+        this.setRefreshComplete();
     }
 
-    protected SwipeRefreshLayout getRefreshLayout(){
-        return mSwipeRefresh;
+    protected FixedSwipeToLoadLayout getRefreshLayout() {
+        return this.fixedSwipeToLoadLayout;
     }
 
-    /**
-     * 设置是否显示Toolbar标题栏
-     */
     public void setToolBarVisible(boolean is) {
-        if (mToolbar == null) {
-            return;
-        }
+        if (this.mToolbar != null) {
+            if (is) {
+                this.mToolbar.setVisibility(View.VISIBLE);
+            } else {
+                this.mToolbar.setVisibility(View.GONE);
+            }
 
-        if (is) {
-            mToolbar.setVisibility(View.VISIBLE);
-        } else {
-            mToolbar.setVisibility(View.GONE);
         }
     }
 
-    /**
-     * 设置是否显示toolbar的返回按钮
-     * @param visiable
-     */
     public void setBackIconVisiable(boolean visiable) {
-        mTitleBarBack.setVisibility(visiable ? View.VISIBLE :View.INVISIBLE);
+        this.mTitleBarBack.setVisibility(visiable ? View.VISIBLE : View.INVISIBLE);
     }
 
-    /**
-     * toolbar缓慢收起或显示
-     */
     public void showOrHideToolbarSmooth(boolean show) {
-        if (mToolbar == null) {
-            return;
-        }
-        if (show && ((LinearLayout.LayoutParams) mToolbar.getLayoutParams()).topMargin < 0) {
-            ObjectAnimator animator = ObjectAnimator.ofInt(mToolbar, "translateY",
-                    mToolbar.getLayoutParams().height, 0).setDuration(500);
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    int height = (Integer) animation.getAnimatedValue();
-                    LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mToolbar.getLayoutParams();
-                    lp.topMargin = -height;
-                    mToolbar.setLayoutParams(lp);
+        if (this.mToolbar != null) {
+            ObjectAnimator animator;
+            if (show && ((android.widget.LinearLayout.LayoutParams) this.mToolbar.getLayoutParams()).topMargin < 0) {
+                animator = ObjectAnimator.ofInt(this.mToolbar, "translateY", new int[]{this.mToolbar.getLayoutParams().height, 0}).setDuration(500L);
+                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        int height = ((Integer) animation.getAnimatedValue()).intValue();
+                        android.widget.LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) ActivityBase.this.mToolbar.getLayoutParams();
+                        lp.topMargin = -height;
+                        ActivityBase.this.mToolbar.setLayoutParams(lp);
+                    }
+                });
+                animator.setInterpolator(new AccelerateDecelerateInterpolator());
+                animator.start();
+            } else if (!show && ((android.widget.LinearLayout.LayoutParams) this.mToolbar.getLayoutParams()).topMargin == 0) {
+                animator = ObjectAnimator.ofInt(this.mToolbar, "translateY", new int[]{0, this.mToolbar.getLayoutParams().height}).setDuration(500L);
+                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        int height = ((Integer) animation.getAnimatedValue()).intValue();
+                        android.widget.LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) ActivityBase.this.mToolbar.getLayoutParams();
+                        lp.topMargin = -height;
+                        ActivityBase.this.mToolbar.setLayoutParams(lp);
+                    }
+                });
+                animator.setInterpolator(new AccelerateInterpolator(2.0F));
+                animator.start();
+            }
 
-                }
-            });
-            animator.setInterpolator(new AccelerateDecelerateInterpolator());
-            animator.start();
-        } else if (!show && ((LinearLayout.LayoutParams) mToolbar.getLayoutParams()).topMargin == 0) {
-            ObjectAnimator animator = ObjectAnimator.ofInt(mToolbar, "translateY", 0,
-                    mToolbar.getLayoutParams().height).setDuration(500);
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    int height = (Integer) animation.getAnimatedValue();
-                    LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mToolbar.getLayoutParams();
-                    lp.topMargin = -height;
-                    mToolbar.setLayoutParams(lp);
-                }
-            });
-            animator.setInterpolator(new AccelerateInterpolator(2));
-            animator.start();
         }
     }
 
-    /**
-     * 只有API大于16的才能够设置Toolbar的背景颜色
-     */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    @TargetApi(16)
     public void setTitleBarBackgroundColor(int color) {
-        if (mToolbar != null) {
-            mToolbar.setBackgroundColor(color);
+        if (this.mToolbar != null) {
+            this.mToolbar.setBackgroundColor(color);
         }
+
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    @TargetApi(16)
     public void setTitleBarBackgroundColor(Drawable barBackgroundColor) {
-        if (mToolbar != null) {
-            mToolbar.setBackground(barBackgroundColor);
+        if (this.mToolbar != null) {
+            this.mToolbar.setBackground(barBackgroundColor);
         }
+
     }
 
     public void toActivity(Class<?> cls) {
-        startActivity(new Intent(this, cls));
+        this.startActivity(new Intent(this, cls));
     }
 
-    /**
-     * 显示或隐藏输入法
-     */
     protected void showKeyboard(boolean isShow) {
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (isShow) {
-            if (getCurrentFocus() == null) {
-                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            if (this.getCurrentFocus() == null) {
+                imm.toggleSoftInput(2, 0);
             } else {
-                imm.showSoftInput(getCurrentFocus(), 0);
+                imm.showSoftInput(this.getCurrentFocus(), 0);
             }
-        } else {
-            if (getCurrentFocus() != null) {
-                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-            }
+        } else if (this.getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 2);
         }
+
     }
 
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         ActivityCollector.removeActivity(this);
-        mLoadingHelper.stopWaiting();
+        this.mLoadingHelper.stopWaiting();
     }
 
-    @Override
     public void onExceptionHandle(ExceptionHandle.ResponseThrowable restError) {
-
     }
 
-    @Override
     public void showErrorView() {
-        setRefreshComplete();
-        mPageLoadingHelper.showErrorView();
+        this.setRefreshComplete();
+        this.mPageLoadingHelper.showErrorView();
     }
 
-    @Override
     public void showErrorView(ExceptionHandle.ResponseThrowable throwable) {
-        setRefreshComplete();
-        mPageLoadingHelper.showErrorView(throwable);
+        this.setRefreshComplete();
+        this.mPageLoadingHelper.showErrorView(throwable);
     }
 
-    @Override
     public void showErrorView(@Nullable String pErrorMes, @DrawableRes int pErrorIconRes) {
-        setRefreshComplete();
-        mPageLoadingHelper.showErrorView(pErrorMes,pErrorIconRes);
+        this.setRefreshComplete();
+        this.mPageLoadingHelper.showErrorView(pErrorMes, pErrorIconRes);
     }
 
-    @Override
     public void showErrorView(View pview) {
-        setRefreshComplete();
-        mPageLoadingHelper.showErrorView(pview);
+        this.setRefreshComplete();
+        this.mPageLoadingHelper.showErrorView(pview);
     }
 
-    @Override
     public void showPageInprossView() {
-        mPageLoadingHelper.showInPageProgressView();
+        this.mPageLoadingHelper.showInPageProgressView();
     }
 
-    @Override
     public void showEmptyView(@DrawableRes int pEmptyIconRes, @Nullable String pEpmtyMes) {
-        setRefreshComplete();
-        mPageLoadingHelper.showEmptyView(pEmptyIconRes,pEpmtyMes);
+        this.setRefreshComplete();
+        this.mPageLoadingHelper.showEmptyView(pEmptyIconRes, pEpmtyMes);
     }
 
-    @Override
+    public void showEmptyView(@DrawableRes int pEmptyIconRes, @StringRes int pEpmtyMes) {
+        this.setRefreshComplete();
+        this.mPageLoadingHelper.showEmptyView(pEmptyIconRes, pEpmtyMes);
+    }
+
     public void showEmptyView() {
-        setRefreshComplete();
-        mPageLoadingHelper.showEmptyView();
+        this.setRefreshComplete();
+        this.mPageLoadingHelper.showEmptyView();
     }
 }
