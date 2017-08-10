@@ -4,12 +4,13 @@ import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 
+import com.squareup.okhttp.Interceptor;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import okhttp3.Interceptor;
 import xgn.com.basesdk.network.interfaces.INetExternalParams;
 
 /**

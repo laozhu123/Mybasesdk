@@ -37,8 +37,12 @@ public class MainActivity extends MyBaseBindPresentActivity<PresenterMain> imple
     }
 
     @Override
-    public void sayHelo() {
-        showToast("helo");
+    public void sayHelo(String helo) {
+        if (refreshLayout.isRefreshing())
+            refreshLayout.setRefreshing(false);
+        if (refreshLayout.isLoadingMore())
+            refreshLayout.setLoadingMore(false);
+        showToast(helo);
     }
 
     @Override
@@ -53,13 +57,11 @@ public class MainActivity extends MyBaseBindPresentActivity<PresenterMain> imple
 
     @Override
     public void onRefresh() {
-        refreshLayout.setRefreshing(false);
         presenterMain.getHelo();
     }
 
     @Override
     public void onLoadMore() {
-        refreshLayout.setLoadingMore(false);
         presenterMain.getHelo();
     }
 }

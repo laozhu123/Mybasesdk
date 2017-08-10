@@ -2,12 +2,20 @@ package xgn.com.my_basesdk.app;
 
 import android.support.annotation.NonNull;
 
+import com.squareup.okhttp.Interceptor;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import xgn.com.basesdk.base.app.CoreApplication;
 import xgn.com.basesdk.network.XgNetWork;
 import xgn.com.basesdk.network.interfaces.INetExternalParams;
+import xgn.com.my_basesdk.BuildConfig;
+import xgn.com.my_basesdk.StethoIniter;
 import xgn.com.my_basesdk.injecter.AppModule;
 import xgn.com.my_basesdk.injecter.component.AppComponent;
 import xgn.com.my_basesdk.injecter.component.DaggerAppComponent;
+import xgn.com.my_basesdk.net.TokenInterceptor;
 
 /**
  * Created by Administrator on 2017/8/9.
@@ -30,7 +38,14 @@ public class MyApplication extends CoreApplication {
     }
 
     private void initNetWork() {
-        XgNetWork.init(new XgNetWork.Builder(this).externalParams(new INetExternalParams() {
+        List<Interceptor> intercepteors = new ArrayList<>();
+        List<Interceptor> networkIntercepteors = new ArrayList<>();
+        intercepteors.add(new TokenInterceptor());
+        StethoIniter.init(this);
+        if (StethoIniter.getInterptor() != null) {
+            networkIntercepteors.add(StethoIniter.getInterptor());
+        }
+        XgNetWork build = new XgNetWork.Builder(this).externalParams(new INetExternalParams() {
             @Override
             public String getUserId() {
                 return null;
@@ -43,32 +58,37 @@ public class MyApplication extends CoreApplication {
 
             @Override
             public boolean isRelease() {
-                return false;
+                return BuildConfig.BUILD_TYPE.equals("debug");
             }
 
             @NonNull
             @Override
             public String httpHost() {
-                return "http://172.16.103.14";
+                return "http://172.16.1.180:8005/";  //主域名
             }
 
             @NonNull
             @Override
             public String httpSecondHost() {
-                return null;
+                return "http://sjyxtest.yiqiguang.com/tbbuser/";  //第二个域名
             }
 
             @NonNull
             @Override
             public String mockHost() {
-                return null;
+                return Servers.TBB_MOCK;  //mock域名
             }
 
             @Override
             public int connectTimeOut() {
                 return 0;
             }
-        }).build());
+        })
+                .extraHeaders(null)
+                .interceptors(intercepteors)
+                .networkInterceptors(networkIntercepteors)
+                .build();
+        XgNetWork.init(build);
     }
 
     private void inject() {

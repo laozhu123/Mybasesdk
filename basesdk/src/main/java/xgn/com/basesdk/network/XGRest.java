@@ -55,7 +55,13 @@ public class XGRest {
         }
 
         OkHttpClient client2 = builder.build();
-        this.mRetrofit = (new retrofit2.Retrofit.Builder()).baseUrl(networkParams.httpHost()).addConverterFactory(CommonConverterFactory.create()).addCallAdapterFactory(RxJava2CallAdapterFactory.create()).client(client2).validateEagerly(true).build();
+        this.mRetrofit = (new retrofit2.Retrofit.Builder())
+                .baseUrl(networkParams.httpHost())
+                .addConverterFactory(CommonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .client(client2)
+                .validateEagerly(true)
+                .build();
     }
 
     public <T> T create(Class<T> service) {

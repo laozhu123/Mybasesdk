@@ -7,6 +7,6 @@ import xgn.com.basesdk.base.mvp.MvpView;
  */
 
 public interface IUIMain extends MvpView {
-    void sayHelo();
+    void sayHelo(String helo);
 
 }
