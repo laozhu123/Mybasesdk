@@ -1,1 +1,1 @@
-include ':app', ':basesdk', ':swipepullload'
+include ':app', ':basesdk'

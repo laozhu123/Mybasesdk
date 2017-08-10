@@ -37,7 +37,6 @@ dependencies {
     compile 'me.yokeyword:fragmentation:0.10.1'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile project(':swipepullload')
     compile 'javax.inject:javax.inject:1'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
     compile 'com.squareup.okhttp3:logging-interceptor:3.8.1'

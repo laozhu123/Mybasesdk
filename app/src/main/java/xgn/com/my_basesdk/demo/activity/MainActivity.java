@@ -2,10 +2,9 @@ package xgn.com.my_basesdk.demo.activity;
 
 import android.view.View;
 
-import com.xgn.common.swipe_pull_load.swipetoloadlayout.SwipeToLoadLayout;
-
 import javax.inject.Inject;
 
+import xgn.com.basesdk.view.swipetoloadlayout.swipetoloadlayout.SwipeToLoadLayout;
 import xgn.com.my_basesdk.R;
 import xgn.com.my_basesdk.base.activity.MyBaseBindPresentActivity;
 import xgn.com.my_basesdk.demo.interfaces.IUIMain;
@@ -26,6 +25,9 @@ public class MainActivity extends MyBaseBindPresentActivity<PresenterMain> imple
     @Override
     protected void initActivity(View pView) {
         refreshLayout = getRefreshLayout();
+        setTitle("首页");
+        setBackIconVisiable(true);
+
     }
 
 

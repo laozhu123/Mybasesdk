@@ -23,11 +23,6 @@ import android.widget.TextView;
 
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
-import com.xgn.common.swipe_pull_load.FixedSwipeToLoadLayout;
-import com.xgn.common.swipe_pull_load.UtilFooterHeaderView;
-import com.xgn.common.swipe_pull_load.swipetoloadlayout.OnLoadMoreListener;
-import com.xgn.common.swipe_pull_load.swipetoloadlayout.OnRefreshListener;
-import com.xgn.common.swipe_pull_load.swipetoloadlayout.SwipeToLoadLayout;
 
 import xgn.com.basesdk.R;
 import xgn.com.basesdk.base.ActivityCollector;
@@ -36,6 +31,11 @@ import xgn.com.basesdk.base.PageLoadingHelper;
 import xgn.com.basesdk.base.mvp.MvpView;
 import xgn.com.basesdk.network.ExceptionHandle;
 import xgn.com.basesdk.utils.UiUtil;
+import xgn.com.basesdk.view.swipetoloadlayout.FixedSwipeToLoadLayout;
+import xgn.com.basesdk.view.swipetoloadlayout.UtilFooterHeaderView;
+import xgn.com.basesdk.view.swipetoloadlayout.swipetoloadlayout.OnLoadMoreListener;
+import xgn.com.basesdk.view.swipetoloadlayout.swipetoloadlayout.OnRefreshListener;
+import xgn.com.basesdk.view.swipetoloadlayout.swipetoloadlayout.SwipeToLoadLayout;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
