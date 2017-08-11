@@ -2,11 +2,10 @@ package xgn.com.my_basesdk.app;
 
 import android.support.annotation.NonNull;
 
-import com.squareup.okhttp.Interceptor;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.Interceptor;
 import xgn.com.basesdk.base.app.CoreApplication;
 import xgn.com.basesdk.network.XgNetWork;
 import xgn.com.basesdk.network.interfaces.INetExternalParams;
@@ -76,7 +75,7 @@ public class MyApplication extends CoreApplication {
             @NonNull
             @Override
             public String mockHost() {
-                return Servers.TBB_MOCK;  //mock域名
+                return null;  //mock域名
             }
 
             @Override
