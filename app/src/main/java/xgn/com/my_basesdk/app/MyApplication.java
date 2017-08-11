@@ -57,7 +57,7 @@ public class MyApplication extends CoreApplication {
 
             @Override
             public boolean isRelease() {
-                return BuildConfig.BUILD_TYPE.equals("debug");
+                return BuildConfig.BUILD_TYPE.equals("release");
             }
 
             @NonNull
@@ -75,7 +75,7 @@ public class MyApplication extends CoreApplication {
             @NonNull
             @Override
             public String mockHost() {
-                return null;  //mock域名
+                return "http://172.16.1.15:8068/mockjsdata/9/";  //mock域名
             }
 
             @Override
