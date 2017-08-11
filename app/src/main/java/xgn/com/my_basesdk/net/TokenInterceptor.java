@@ -1,14 +1,24 @@
 package xgn.com.my_basesdk.net;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 
 import java.io.IOException;
 
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.BufferedSink;
 import xgn.com.basesdk.network.model.BaseResponse;
+import xgn.com.my_basesdk.app.Servers;
+import xgn.com.my_basesdk.db.LoginAccountManager;
+import xgn.com.my_basesdk.net.requests.LoginRequest;
+import xgn.com.my_basesdk.utils.AESUtils;
 
 /**
  * Created by huluzi on 2017/8/11.
@@ -35,8 +45,10 @@ public class TokenInterceptor implements Interceptor {
         if (baseResponse != null) {
             // Token 过期
             if (TOKEN_INVALID.equals(baseResponse.resultCode)) {
+                Log.d("helo","invalid");
                 // 再次进行网络一模一样的网路请求
-                if (true) {
+                boolean flag = handleReLogin(chain);
+                if (flag) {
                     request = request.newBuilder()
                             .header("Authorization", mToken)
                             .build();
@@ -53,6 +65,75 @@ public class TokenInterceptor implements Interceptor {
 
         return response;
     }
+
+
+    /**
+     * 执行重新登陆的网路请求
+     * 从 用户中心数据LoginAccountManager中去取得 用户名密码
+     */
+    public boolean handleReLogin(Chain chain) throws IOException {
+
+        Request request = provideLoginRequest();
+        Response response = chain.proceed(request);
+
+        /**
+         * gson解析以后 object默认实例是LinkedTreeMap
+         */
+        return handleParsedToken(response);
+    }
+
+    /**
+     * 构造重登陆的request 请求
+     */
+    public Request provideLoginRequest() {
+//        final String format = "{\"password\":\"%s\", \"phone\":\"%s\"}";
+        final LoginRequest loginRequest = new LoginRequest();
+        final String phone = LoginAccountManager.getInstance().getCurrentAccount().account;
+        final String password = LoginAccountManager.getInstance().getCurrentAccount().password;
+        loginRequest.password = AESUtils.encrypt(password);
+        loginRequest.phone = phone;
+        RequestBody requestBody = new RequestBody() {
+            @Override
+            public MediaType contentType() {
+                return MediaType.parse("application/json;charset=utf-8");
+            }
+
+            @Override
+            public void writeTo(BufferedSink sink) throws IOException {
+                LoginRequest loginRequest = new LoginRequest();
+                loginRequest.phone = phone;
+                loginRequest.password = AESUtils.encrypt(password);
+                Gson gson = new Gson();
+                String content = gson.toJson(loginRequest);
+                sink.write(content.getBytes());
+            }
+        };
+        String url = String.format("%s%s", Servers.getTBBUserApi(), "account/login");
+        return new Request.Builder()
+                .addHeader("Content-Type", "application/json;charset=utf-8")
+                .url(url)
+                .post(requestBody)
+                .build();
+    }
+
+    /**
+     * 解析并且存储token
+     */
+    public boolean handleParsedToken(Response response) throws IOException {
+        final String key = "token";
+        BaseResponse baseResponse = mGson.fromJson(response.body().string(), BaseResponse.class);
+        LinkedTreeMap treeMap = (LinkedTreeMap) (baseResponse.resultData);
+        if (treeMap != null && treeMap.containsKey(key)) {
+            mToken = (String) treeMap.get(key);
+            return true;
+        }
+        return false;
+    }
+
+    public String getToken() {
+        return mToken;
+    }
+
 
     /**
      * 重新构造相同的返回
