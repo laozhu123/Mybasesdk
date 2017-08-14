@@ -53,7 +53,7 @@ public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
                 startActivity(new Intent(this, ActivityTabFragment.class));
                 break;
             case R.id.swipe_fragment:
-                startActivity(new Intent(this, ActivityTabFragment.class));
+                startActivity(new Intent(this, ActivitySwipeFragment.class));
                 break;
         }
     }

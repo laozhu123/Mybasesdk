@@ -169,7 +169,7 @@ public abstract class ActivityBase extends AppCompatActivity implements MvpView,
     }
 
     public void hideTitleBar() {
-        this.mToolbar.setVisibility(View.GONE);
+            this.mToolbar.setVisibility(View.GONE);
     }
 
     protected void onPause() {

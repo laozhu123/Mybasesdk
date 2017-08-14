@@ -8,5 +8,5 @@ android:orientation="vertical">
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:text="第二页" />
+    android:text="第三页" />
 </LinearLayout>
