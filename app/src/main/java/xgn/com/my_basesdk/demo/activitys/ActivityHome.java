@@ -18,6 +18,8 @@ public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
     TextView listPage;
     @Bind(R.id.tab_fragment)
     TextView tabFragment;
+    @Bind(R.id.swipe_fragment)
+    TextView swipeFragment;
 
     @Override
     protected int getContentLayoutResId() {
@@ -41,7 +43,7 @@ public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
 
     }
 
-    @OnClick({R.id.list_page, R.id.tab_fragment})
+    @OnClick({R.id.list_page, R.id.tab_fragment,R.id.swipe_fragment})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.list_page:
@@ -50,6 +52,11 @@ public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
             case R.id.tab_fragment:
                 startActivity(new Intent(this, ActivityTabFragment.class));
                 break;
+            case R.id.swipe_fragment:
+                startActivity(new Intent(this, ActivityTabFragment.class));
+                break;
         }
     }
+
+
 }
