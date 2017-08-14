@@ -1,18 +1,23 @@
 package xgn.com.my_basesdk.demo.activitys;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import xgn.com.basesdk.base.mvp.BasePresenter;
 import xgn.com.my_basesdk.R;
 import xgn.com.my_basesdk.base.activity.MyBaseBindPresentActivity;
 import xgn.com.my_basesdk.injecter.component.ActivityComponent;
 
-public class ActivityHome extends MyBaseBindPresentActivity implements View.OnClickListener {
+public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
+
+    @Bind(R.id.list_page)
     TextView listPage;
+    @Bind(R.id.tab_fragment)
+    TextView tabFragment;
 
     @Override
     protected int getContentLayoutResId() {
@@ -20,9 +25,10 @@ public class ActivityHome extends MyBaseBindPresentActivity implements View.OnCl
     }
 
     @Override
-    protected void initActivity(View var1) {
-        listPage = (TextView) findViewById(R.id.list_page);
-        listPage.setOnClickListener(this);
+    protected void initActivity(View view) {
+        ButterKnife.bind(this, view);
+        setTitle("首页");
+        setBackIconVisiable(false);
     }
 
     @Override
@@ -35,15 +41,15 @@ public class ActivityHome extends MyBaseBindPresentActivity implements View.OnCl
 
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-        ButterKnife.bind(this);
-    }
-
-    @Override
-    public void onClick(View v) {
-        startActivity(new Intent(this, ActivityListPage.class));
+    @OnClick({R.id.list_page, R.id.tab_fragment})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.list_page:
+                startActivity(new Intent(this, ActivityListPage.class));
+                break;
+            case R.id.tab_fragment:
+                startActivity(new Intent(this, ActivityTabFragment.class));
+                break;
+        }
     }
 }

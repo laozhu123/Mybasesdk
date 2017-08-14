@@ -3,6 +3,7 @@ package xgn.com.basesdk.base.mvp;
 
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.view.View;
 
 import xgn.com.basesdk.network.ExceptionHandle;
@@ -64,6 +65,8 @@ public interface MvpView {
     void showPageInprossView();
 
     void showEmptyView(@DrawableRes int pEmptyIconRes, @Nullable String pEpmtyMes);
+
+    void showEmptyView(@DrawableRes int pEmptyIconRes,@StringRes int pEpmtyMes);
 
     void showEmptyView();
 }

@@ -8,6 +8,8 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.Toolbar;
@@ -19,9 +21,9 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import me.yokeyword.fragmentation.SupportFragment;
 import xgn.com.basesdk.R;
 import xgn.com.basesdk.base.DialogLoadingHelper;
 import xgn.com.basesdk.base.PageLoadingHelper;
@@ -29,6 +31,7 @@ import xgn.com.basesdk.base.activity.ActivityBase;
 import xgn.com.basesdk.base.mvp.MvpView;
 import xgn.com.basesdk.dialog.LoadingDialog;
 import xgn.com.basesdk.network.ExceptionHandle;
+import xgn.com.basesdk.utils.ScreenUtil;
 import xgn.com.basesdk.utils.UiUtil;
 
 
@@ -38,7 +41,10 @@ import xgn.com.basesdk.utils.UiUtil;
  * Modified by yefeng
  */
 
-public abstract class FragmentBase extends SupportFragment implements MvpView {
+public abstract class FragmentBase extends Fragment implements MvpView {
+
+    public static final int RESULT_OK = 200;
+
     protected static final String Tag = "BaseFragment";
     protected boolean loaded = false;
 
@@ -48,22 +54,30 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
     private ImageView mImageBack;
     private TextView mTextTitle;
     private TextView mRightText;
+    private ImageView mRightIcon;
     private ViewGroup mTitleBar;
     protected FrameLayout mContentContainer;
 
     /**
-     * 标记当前 Fragment 是否处于可见状态
+     * 在ViewPager中有效，标记当前 Fragment 是否处于可见状态，建议使用{@link #isFragmentVisible()}
+     * @see #isFragmentVisible()
      */
-    protected boolean mIsVisible;
+    public boolean mIsVisible;
+    private boolean mIsVisibleToUser;
+    /** 是否在前台，该状态在onStart和onStop更新 */
+    private boolean mIsForeground;
+
     private PageLoadingHelper mPageLoadingHelper;
     private View mContentView;
     private SwipeRefreshLayout mSwipeRefresh;
+    public FragmentActivity _mActivity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setComponent();
         super.onCreate(savedInstanceState);
         this.setHasOptionsMenu(true);
+        _mActivity = getActivity();
         mLoadingHelper = new DialogLoadingHelper(getActivity());
         mLoadingDialog = new LoadingDialog(_mActivity);
     }
@@ -74,10 +88,10 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater,
-            @Nullable
-                    ViewGroup container,
-            @Nullable
-                    Bundle savedInstanceState) {
+                             @Nullable
+                                     ViewGroup container,
+                             @Nullable
+                                     Bundle savedInstanceState) {
         View view = initBaseView(inflater, container);
         initTitleBar();
         initPresenter();
@@ -86,6 +100,14 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
         mContext = _mActivity;
         showContent();
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view,
+                              @Nullable
+                                      Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mIsForeground = true;
     }
 
     protected void setRefreshComplete() {
@@ -111,6 +133,7 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
         mTitleBar = (ViewGroup) view.findViewById(R.id.title_bar);
         mImageBack = (ImageView) view.findViewById(R.id.titlebar_back);
         mTextTitle = (TextView) view.findViewById(R.id.titlebar_title);
+        mRightIcon = (ImageView) view.findViewById(R.id.titlebar_right_icon);
         mRightText = (TextView) view.findViewById(R.id.titlebar_right_text);
         mContentView = pInflater.inflate(getLayoutId(), mContentContainer, false);
         mPageLoadingHelper = new PageLoadingHelper(mContentContainer, this, mContentView);
@@ -157,15 +180,7 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
         return mContentView.findViewById(id);
     }
 
-    @Override
-    public void onSupportVisible() {
-        mIsVisible = true;
-    }
 
-    @Override
-    public void onSupportInvisible() {
-        mIsVisible = false;
-    }
 
     protected abstract void initFragment(View view);
 
@@ -180,15 +195,6 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
         return -1;
     }
 
-    protected void onBackButtonClick() {
-        onBackPressedSupport();
-    }
-
-    @Override
-    public boolean onBackPressedSupport() {
-        pop();
-        return true;
-    }
 
     private void initTitleBar() {
         if (getActivity() instanceof ActivityBase) {
@@ -200,7 +206,8 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
         mImageBack.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                onBackButtonClick();
+                if (getActivity() != null)
+                    getActivity().onBackPressed();
             }
         });
     }
@@ -218,7 +225,7 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
     }
 
     public void hideBackButton() {
-        mImageBack.setVisibility(View.GONE);
+        setStatusLeftImage(View.GONE);
     }
 
     /**
@@ -234,15 +241,58 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
     }
 
     /**
+     * 设置左图标的状态
+     */
+    public void setStatusLeftImage(int visible){
+        if (mImageBack!=null) {
+            mImageBack.setVisibility(visible);
+        }
+    }
+
+    /**
+     * 设置左边图标
+     */
+    public void setLeftImage(@DrawableRes int res){
+        if(mImageBack!=null){
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) mImageBack.getLayoutParams();
+            layoutParams.setMargins(ScreenUtil.dip2px(getContext(), 15), 0, 0, 0);
+            mImageBack.setLayoutParams(layoutParams);
+            mImageBack.setImageResource(res);
+        }
+    }
+
+    /**
+     * 设置左图标点击事件
+     */
+    public void setLeftImageClick(OnClickListener onClickListener){
+        if(mImageBack!=null){
+            mImageBack.setOnClickListener(onClickListener);
+        }
+    }
+
+    /**
      * 设置右文本
      */
     public void setRightTitle(CharSequence title) {
         if (!TextUtils.isEmpty(title)) {
             mRightText.setText(title);
             mTitleBar.setVisibility(View.VISIBLE);
+            mRightIcon.setVisibility(View.INVISIBLE);
+            mRightText.setVisibility(View.VISIBLE);
         } else {
-            mRightText.setVisibility(View.GONE);
+            mRightText.setVisibility(View.INVISIBLE);
         }
+    }
+
+    /**
+     * 设置右文本
+     */
+    public void setRightIcon(@DrawableRes
+                                     int drawableRes) {
+        mTitleBar.setVisibility(View.VISIBLE);
+        mRightIcon.setImageResource(drawableRes);
+        mRightIcon.setVisibility(View.VISIBLE);
+        mRightText.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -251,6 +301,15 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
     public void setRightTitleClick(OnClickListener onClickListener) {
         if (mRightText != null) {
             mRightText.setOnClickListener(onClickListener);
+        }
+    }
+
+    /**
+     * 设置右文本点击事件
+     */
+    public void setRightIconClick(OnClickListener onClickListener) {
+        if (mRightIcon != null) {
+            mRightIcon.setOnClickListener(onClickListener);
         }
     }
 
@@ -349,7 +408,6 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
      */
     @Override
     public void showWaiting(int strId, boolean isCancelable) {
-        isCancelable = true;
         //        String message = getString(strId);
         //        mLoadingHelper.showWaiting(message, isCancelable, getActivity());
         mLoadingDialog.setMessage(strId);
@@ -463,9 +521,51 @@ public abstract class FragmentBase extends SupportFragment implements MvpView {
     }
 
     @Override
+    public void showEmptyView(
+            @DrawableRes
+                    int pEmptyIconRes,
+            @StringRes
+                    int pEpmtyMes) {
+        setRefreshComplete();
+        mPageLoadingHelper.showEmptyView(pEmptyIconRes, pEpmtyMes);
+    }
+
+    @Override
     public void showEmptyView() {
         setRefreshComplete();
         mPageLoadingHelper.showEmptyView();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (getUserVisibleHint()) {
+            mIsVisibleToUser = true;
+        } else {
+            mIsVisibleToUser = false;
+        }
+        mIsVisible = isFragmentVisible();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mIsForeground = true;
+        mIsVisible = isFragmentVisible();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mIsForeground = false;
+        mIsVisible = isFragmentVisible();
+    }
+
+    /**
+     * 在ViewPager中可用该方法可以判断是否在可见
+     */
+    public boolean isFragmentVisible(){
+        return mIsVisibleToUser && mIsForeground;
     }
 }
 

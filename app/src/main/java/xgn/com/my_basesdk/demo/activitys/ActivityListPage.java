@@ -35,7 +35,7 @@ public class ActivityListPage extends MyBaseBindPresentActivity<PresenterListPag
     @Override
     protected void initActivity(View pView) {
         mRefreshLayout = getRefreshLayout();
-        setTitle("首页");
+        setTitle("列表页");
         setBackIconVisiable(true);
         mList = new LinkedList<>();
         mAdapter = new ListPageAdapter(mList);
