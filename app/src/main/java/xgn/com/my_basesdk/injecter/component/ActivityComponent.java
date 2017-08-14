@@ -8,7 +8,7 @@ import android.content.Context;
 
 import dagger.Component;
 import xgn.com.basesdk.base.injector.ContextLife;
-import xgn.com.my_basesdk.demo.activity.MainActivity;
+import xgn.com.my_basesdk.demo.activitys.ActivityListPage;
 import xgn.com.my_basesdk.injecter.ActivityScope;
 import xgn.com.my_basesdk.injecter.module.ActivityModule;
 
@@ -21,5 +21,5 @@ public interface ActivityComponent extends AppComponent {
     @ContextLife("Activity")
     Context getContext();
 
-    void inject(MainActivity mainActivity);
+    void inject(ActivityListPage activityListPage);
 }

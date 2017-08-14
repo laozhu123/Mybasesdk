@@ -1,4 +1,4 @@
-package xgn.com.my_basesdk.demo.presenter;
+package xgn.com.my_basesdk.demo.presenters;
 
 import android.support.annotation.NonNull;
 
@@ -10,7 +10,7 @@ import xgn.com.basesdk.base.mvp.BasePresenter;
 import xgn.com.basesdk.commonui.rxjava.XgSubscriber;
 import xgn.com.basesdk.network.ExceptionHandle;
 import xgn.com.my_basesdk.R;
-import xgn.com.my_basesdk.demo.interfaces.IUIMain;
+import xgn.com.my_basesdk.demo.interfaces.IUIListPage;
 import xgn.com.my_basesdk.net.RetrofitApi;
 import xgn.com.my_basesdk.net.responses.Helo;
 
@@ -18,12 +18,12 @@ import xgn.com.my_basesdk.net.responses.Helo;
  * Created by huluzi on 2017/8/10.
  */
 
-public class PresenterMain extends BasePresenter<IUIMain> {
+public class PresenterListPage extends BasePresenter<IUIListPage> {
 
     private RetrofitApi mRetrofitApi;
 
     @Inject
-    public PresenterMain(RetrofitApi retrofitApi) {
+    public PresenterListPage(RetrofitApi retrofitApi) {
         mRetrofitApi = retrofitApi;
     }
 
@@ -35,7 +35,7 @@ public class PresenterMain extends BasePresenter<IUIMain> {
                     @Override
                     public boolean onFailed(ExceptionHandle.ResponseThrowable responseThrowable) {
                         if (getMvpView() != null) {
-                            getMvpView().sayHelo(responseThrowable.message);
+                            getMvpView().showList(-1);
                         }
                         return false;
                     }
@@ -43,9 +43,10 @@ public class PresenterMain extends BasePresenter<IUIMain> {
                     @Override
                     public void onNext(@NonNull Helo response) {
                         if (getMvpView() != null) {
-                            getMvpView().sayHelo(response.helo);
+                            getMvpView().showList(response.receiverInfoList.size());
                         }
                     }
+
                     @Override
                     public int getDialogMessage() {
                         return R.string.loading;

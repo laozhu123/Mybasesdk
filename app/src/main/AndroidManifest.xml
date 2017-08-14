@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="xgn.com.my_basesdk">
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".app.MyApplication"
@@ -14,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:theme">
-        <activity android:name=".demo.activity.MainActivity">
+        <activity android:name=".demo.activitys.ActivityListPage" />
+        <activity android:name=".demo.activitys.ActivityHome">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
