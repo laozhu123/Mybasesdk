@@ -15,7 +15,6 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import xgn.com.basesdk.base.activity.ActivityBase;
 import xgn.com.basesdk.base.mvp.BasePresenter;
 import xgn.com.my_basesdk.R;
 import xgn.com.my_basesdk.base.activity.MyBaseBindPresentActivity;
@@ -37,7 +36,6 @@ public class ActivitySwipeFragment extends MyBaseBindPresentActivity {
     Toolbar mToolbar1;
 
     private View mTitleBarBack;
-    private TextView mTitleBarRightText;
     private TextView mTitleBarTitle;
 
     List<Fragment> listfragment;
@@ -61,16 +59,14 @@ public class ActivitySwipeFragment extends MyBaseBindPresentActivity {
         View titleBar = this.getLayoutInflater().inflate(xgn.com.basesdk.R.layout.view_simple_title_bar, (ViewGroup) null);
         mTitleBarBack = titleBar.findViewById(xgn.com.basesdk.R.id.titlebar_back);
         mTitleBarTitle = (TextView) titleBar.findViewById(xgn.com.basesdk.R.id.titlebar_title);
-        mTitleBarRightText = (TextView) titleBar.findViewById(xgn.com.basesdk.R.id.titlebar_right_text);
         mTitleBarBack.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 ActivitySwipeFragment.this.onBackPressed();
             }
         });
-//        mToolbar1.removeAllViews();
         Toolbar.LayoutParams lp = new Toolbar.LayoutParams(-1, -1);
         mToolbar1.addView(titleBar, lp);
-        mTitleBarTitle.setText("swipe");
+        mTitleBarTitle.setText("swipe-fragment");
     }
 
     private void addListener() {
@@ -89,7 +85,7 @@ public class ActivitySwipeFragment extends MyBaseBindPresentActivity {
             }
         });
 
-        viewpager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        viewpager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             @Override
             public void onPageSelected(int index) {
@@ -112,19 +108,19 @@ public class ActivitySwipeFragment extends MyBaseBindPresentActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void initView() {
-        listfragment = new ArrayList<Fragment>(); //new一个List<Fragment>
+        listfragment = new ArrayList<>();
         Fragment f1 = new FragmentSwipeFirst();
         Fragment f2 = new FragmentSwipeSecond();
-        Fragment f3 = new FragmentSwipeThird(); //添加三个fragment到集合
+        Fragment f3 = new FragmentSwipeThird();
         listfragment.add(f1);
         listfragment.add(f2);
         listfragment.add(f3);
 
         FragmentManager fm = getSupportFragmentManager();
-        MyFragmentPagerAdapter mfpa = new MyFragmentPagerAdapter(fm, listfragment); //new myFragmentPagerAdater记得带上两个参数
+        MyFragmentPagerAdapter mfpa = new MyFragmentPagerAdapter(fm, listfragment);
 
         viewpager.setAdapter(mfpa);
-        viewpager.setCurrentItem(0); //设置当前页是第一页
+        viewpager.setCurrentItem(0);
 
         mBottomBar.addItem(new BottomBarTab(this,
                 R.drawable.icon_hall_mission_unselect,

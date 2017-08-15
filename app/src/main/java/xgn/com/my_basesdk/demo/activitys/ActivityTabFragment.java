@@ -47,6 +47,7 @@ public class ActivityTabFragment extends MyBaseBindPresentActivity<BasePresenter
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void initView() {
+
         mBottomBar.addItem(new BottomBarTab(this,
                 R.drawable.icon_hall_mission_unselect,
                 R.drawable.icon_hall_mission_selected,
@@ -55,7 +56,7 @@ public class ActivityTabFragment extends MyBaseBindPresentActivity<BasePresenter
                         R.drawable.icon_hall_mine_unselect,
                         R.drawable.icon_hall_mine_selected,
                         R.string.second_page));
-//        updateBottomBar(mShowHomeTab);
+
         mBottomBar.setOnTabSelectedListener(new BottomBar.OnTabSelectedListener() {
             @Override
             public void onTabSelected(int position, int prePosition) {
@@ -79,16 +80,6 @@ public class ActivityTabFragment extends MyBaseBindPresentActivity<BasePresenter
             public void onTabReselected(int position) {
             }
         });
-    }
-
-    private void updateBottomBar(boolean showOrderHall) {
-        if (showOrderHall) {
-            mBottomBar.getItem(0).setVisibility(View.VISIBLE);
-            mBottomBar.setCurrentItem(0);
-        } else {
-            mBottomBar.getItem(0).setVisibility(View.GONE);
-            mBottomBar.setCurrentItem(1);
-        }
     }
 
     @Override

@@ -2,9 +2,7 @@ package xgn.com.my_basesdk.demo.activitys;
 
 import android.content.Intent;
 import android.view.View;
-import android.widget.TextView;
 
-import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import xgn.com.basesdk.base.mvp.BasePresenter;
@@ -13,13 +11,6 @@ import xgn.com.my_basesdk.base.activity.MyBaseBindPresentActivity;
 import xgn.com.my_basesdk.injecter.component.ActivityComponent;
 
 public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
-
-    @Bind(R.id.list_page)
-    TextView listPage;
-    @Bind(R.id.tab_fragment)
-    TextView tabFragment;
-    @Bind(R.id.swipe_fragment)
-    TextView swipeFragment;
 
     @Override
     protected int getContentLayoutResId() {
