@@ -34,5 +34,5 @@ dependencies {
     compile 'com.facebook.stetho:stetho-okhttp3:1.4.2'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.11'
     annotationProcessor 'com.google.dagger:dagger-android-processor:2.11'
-    compile 'com.jakewharton:butterknife:8.8.1'
+    compile 'com.jakewharton:butterknife:7.0.1'
 }
