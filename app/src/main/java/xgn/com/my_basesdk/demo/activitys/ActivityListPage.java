@@ -40,7 +40,7 @@ public class ActivityListPage extends MyBaseBindPresentActivity<PresenterListPag
         setRightTitle("helo");
         setRightTitleClick(this);
         mRefreshLayout = getRefreshLayout();
-        setTitle("首页");
+        setTitle("列表页");
         setBackIconVisiable(true);
         mList = new LinkedList<>();
         mAdapter = new ListPageAdapter(mList);

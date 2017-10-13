@@ -1,22 +1,20 @@
 package xgn.com.my_basesdk.demo.activitys;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import xgn.com.basesdk.base.mvp.BasePresenter;
 import xgn.com.my_basesdk.R;
 import xgn.com.my_basesdk.base.activity.MyBaseBindPresentActivity;
 import xgn.com.my_basesdk.demo.events.GG;
 import xgn.com.my_basesdk.injecter.component.ActivityComponent;
 
-public class ActivityHome extends MyBaseBindPresentActivity implements View.OnClickListener {
-    TextView listPage;
+public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
 
     @Override
     protected int getContentLayoutResId() {
@@ -24,7 +22,10 @@ public class ActivityHome extends MyBaseBindPresentActivity implements View.OnCl
     }
 
     @Override
-    protected void initActivity(View var1) {
+    protected void initActivity(View view) {
+        ButterKnife.bind(this, view);
+        setTitle("首页");
+        setBackIconVisiable(false);
         EventBus.getDefault().register(this);
         listPage = (TextView) findViewById(R.id.list_page);
         listPage.setOnClickListener(this);
@@ -40,16 +41,19 @@ public class ActivityHome extends MyBaseBindPresentActivity implements View.OnCl
 
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-        ButterKnife.bind(this);
-    }
-
-    @Override
-    public void onClick(View v) {
-        startActivity(new Intent(this, ActivityListPage.class));
+    @OnClick({R.id.list_page, R.id.tab_fragment,R.id.swipe_fragment})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.list_page:
+                startActivity(new Intent(this, ActivityListPage.class));
+                break;
+            case R.id.tab_fragment:
+                startActivity(new Intent(this, ActivityTabFragment.class));
+                break;
+            case R.id.swipe_fragment:
+                startActivity(new Intent(this, ActivitySwipeFragment.class));
+                break;
+        }
     }
 
     @Subscribe

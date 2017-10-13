@@ -23,6 +23,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".demo.activitys.ActivityTabFragment" />
+        <activity android:name=".demo.activitys.ActivitySwipeFragment"></activity>
         <activity android:name=".demo.activitys.EventJumpActivity"></activity>
     </application>
 

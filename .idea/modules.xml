@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/My_basesdk.iml" filepath="$PROJECT_DIR$/My_basesdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Mybasesdk.iml" filepath="$PROJECT_DIR$/Mybasesdk.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/basesdk/basesdk.iml" filepath="$PROJECT_DIR$/basesdk/basesdk.iml" />
     </modules>
