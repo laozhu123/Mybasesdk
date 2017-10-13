@@ -1,11 +1,14 @@
 package xgn.com.my_basesdk.demo.activitys;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import xgn.com.basesdk.base.mvp.BasePresenter;
@@ -14,7 +17,10 @@ import xgn.com.my_basesdk.base.activity.MyBaseBindPresentActivity;
 import xgn.com.my_basesdk.demo.events.GG;
 import xgn.com.my_basesdk.injecter.component.ActivityComponent;
 
-public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
+public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> implements View.OnClickListener {
+
+    @Bind(R.id.list_page)
+    TextView listPage;
 
     @Override
     protected int getContentLayoutResId() {
@@ -41,7 +47,7 @@ public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
 
     }
 
-    @OnClick({R.id.list_page, R.id.tab_fragment,R.id.swipe_fragment})
+    @OnClick({R.id.list_page, R.id.tab_fragment, R.id.swipe_fragment})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.list_page:
@@ -59,5 +65,17 @@ public class ActivityHome extends MyBaseBindPresentActivity<BasePresenter> {
     @Subscribe
     public void helo(GG gg) {
         startActivity(new Intent(this, EventJumpActivity.class));
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // TODO: add setContentView(...) invocation
+        ButterKnife.bind(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 }
