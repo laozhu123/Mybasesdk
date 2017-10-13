@@ -5,10 +5,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import butterknife.ButterKnife;
 import xgn.com.basesdk.base.mvp.BasePresenter;
 import xgn.com.my_basesdk.R;
 import xgn.com.my_basesdk.base.activity.MyBaseBindPresentActivity;
+import xgn.com.my_basesdk.demo.events.GG;
 import xgn.com.my_basesdk.injecter.component.ActivityComponent;
 
 public class ActivityHome extends MyBaseBindPresentActivity implements View.OnClickListener {
@@ -21,6 +25,7 @@ public class ActivityHome extends MyBaseBindPresentActivity implements View.OnCl
 
     @Override
     protected void initActivity(View var1) {
+        EventBus.getDefault().register(this);
         listPage = (TextView) findViewById(R.id.list_page);
         listPage.setOnClickListener(this);
     }
@@ -45,5 +50,10 @@ public class ActivityHome extends MyBaseBindPresentActivity implements View.OnCl
     @Override
     public void onClick(View v) {
         startActivity(new Intent(this, ActivityListPage.class));
+    }
+
+    @Subscribe
+    public void helo(GG gg) {
+        startActivity(new Intent(this, EventJumpActivity.class));
     }
 }

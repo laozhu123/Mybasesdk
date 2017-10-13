@@ -4,6 +4,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.LinkedList;
 
 import javax.inject.Inject;
@@ -13,11 +15,12 @@ import xgn.com.my_basesdk.R;
 import xgn.com.my_basesdk.base.activity.MyBaseBindPresentActivity;
 import xgn.com.my_basesdk.demo.adapters.ListPageAdapter;
 import xgn.com.my_basesdk.demo.beans.SimpleBean;
+import xgn.com.my_basesdk.demo.events.GG;
 import xgn.com.my_basesdk.demo.interfaces.IUIListPage;
 import xgn.com.my_basesdk.demo.presenters.PresenterListPage;
 import xgn.com.my_basesdk.injecter.component.ActivityComponent;
 
-public class ActivityListPage extends MyBaseBindPresentActivity<PresenterListPage> implements IUIListPage, ListPageAdapter.EmptyListener {
+public class ActivityListPage extends MyBaseBindPresentActivity<PresenterListPage> implements IUIListPage, ListPageAdapter.EmptyListener,View.OnClickListener {
 
     private FixedSwipeToLoadLayout mRefreshLayout;
     private ListPageAdapter mAdapter;
@@ -34,6 +37,8 @@ public class ActivityListPage extends MyBaseBindPresentActivity<PresenterListPag
 
     @Override
     protected void initActivity(View pView) {
+        setRightTitle("helo");
+        setRightTitleClick(this);
         mRefreshLayout = getRefreshLayout();
         setTitle("首页");
         setBackIconVisiable(true);
@@ -102,5 +107,11 @@ public class ActivityListPage extends MyBaseBindPresentActivity<PresenterListPag
     @Override
     public void empty() {
         showEmptyView();
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        EventBus.getDefault().post(new GG());
     }
 }

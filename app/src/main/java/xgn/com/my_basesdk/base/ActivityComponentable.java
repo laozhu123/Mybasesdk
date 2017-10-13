@@ -8,6 +8,6 @@ import xgn.com.my_basesdk.injecter.component.ActivityComponent;
 
 public interface ActivityComponentable {
 
-    public ActivityComponent getActivityComponent();
+    ActivityComponent getActivityComponent();
 
 }
